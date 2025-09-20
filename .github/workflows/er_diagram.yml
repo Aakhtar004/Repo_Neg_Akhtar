@@ -1,6 +1,15 @@
 name: 'Generar Diagrama ER y Diccionario'
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+
+on:
   workflow_dispatch: # Permite ejecutar manualmente el workflow
 
 jobs:

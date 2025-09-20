@@ -1,6 +1,14 @@
 name: 'Cargar datos CSV a MySQL'
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+on:
   workflow_dispatch: # Permite ejecutar manualmente el workflow
 
 jobs:
