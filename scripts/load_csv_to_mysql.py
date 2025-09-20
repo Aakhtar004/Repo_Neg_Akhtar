@@ -10,7 +10,18 @@ db_name = os.getenv("DB_NAME")
 
 # Leer el archivo CSV
 csv_file = "crimes_2020.csv"
-data = pd.read_csv(csv_file, delimiter=";")
+data = pd.read_csv(csv_file, delimiter=";")  
+data = data.where(pd.notnull(data), None)  # Reemplazar NaN por None
+
+# Detectar dinámicamente las columnas del archivo CSV
+columns = data.columns.tolist()
+print(f"Columnas detectadas en el archivo CSV: {columns}")
+
+# Generar la consulta SQL dinámicamente
+table_name = "crimes"  # Cambia esto al nombre de tu tabla
+placeholders = ", ".join(["%s"] * len(columns))
+columns_sql = ", ".join([f"`{col}`" for col in columns])
+query = f"INSERT INTO {table_name} ({columns_sql}) VALUES ({placeholders})"
 
 # Conectar a la base de datos
 connection = mysql.connector.connect(
@@ -22,19 +33,9 @@ connection = mysql.connector.connect(
 
 cursor = connection.cursor()
 
-# Insertar los datos en la tabla
-for _, row in data.iterrows():
-    query = """
-    INSERT INTO crimes (DR_NO, Date_Rptd, DATE_OCC, TIME_OCC, AREA, AREA_NAME, Rpt_Dist_No, Part_1_2, Crm_Cd, Crm_Cd_Desc, Vict_Age, Vict_Sex, Vict_Descent, Premis_Cd, Premis_Desc, Status, Status_Desc, LOCATION, LAT, LON)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    values = (
-        row["DR_NO"], row["Date Rptd"], row["DATE OCC"], row["TIME OCC"], row["AREA"], row["AREA NAME"],
-        row["Rpt Dist No"], row["Part 1-2"], row["Crm Cd"], row["Crm Cd Desc"], row["Vict Age"],
-        row["Vict Sex"], row["Vict Descent"], row["Premis Cd"], row["Premis Desc"], row["Status"],
-        row["Status Desc"], row["LOCATION"], row["LAT"], row["LON"]
-    )
-    cursor.execute(query, values)
+# Insertar los datos en bloque
+values = [tuple(row[col] for col in columns) for _, row in data.iterrows()]
+cursor.executemany(query, values)
 
 connection.commit()
 cursor.close()
