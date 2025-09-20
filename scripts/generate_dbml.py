@@ -1,12 +1,17 @@
+from dotenv import load_dotenv
+
 import pymysql
 import os
 
 # Conexión a la base de datos
+load_dotenv()  # carga variables de .env en local
+
+# En local carga el env y en el servidor ya están en el entorno de secrets
 connection = pymysql.connect(
-    host=os.getenv("DB_HOST", "localhost"),  # Valor predeterminado: "localhost"
-    user=os.getenv("DB_USER", "root"),      # Valor predeterminado: "root"
-    password=os.getenv("DB_PASSWORD", ""),  # Valor predeterminado: cadena vacía
-    database=os.getenv("DB_NAME", "test")   # Valor predeterminado: "test"
+    host=os.environ["DB_HOST"],
+    user=os.environ["DB_USER"],
+    password=os.environ["DB_PASSWORD"],
+    database=os.environ["DB_NAME"]
 )
 
 cursor = connection.cursor()

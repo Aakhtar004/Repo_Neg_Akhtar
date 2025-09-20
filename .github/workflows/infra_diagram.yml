@@ -3,15 +3,6 @@ name: 'Generar Diagrama de Infraestructura'
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-
-on:
-  push:
-    branches:
         - main
     paths:
     - 'terraform/**'
