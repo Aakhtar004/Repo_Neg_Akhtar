@@ -1,37 +1,38 @@
-import pandas as pd
-import pymysql
-import os
+name: 'Cargar datos CSV a MySQL'
 
-# Conexión a la base de datos
-connection = pymysql.connect(
-    host=os.getenv("DB_HOST"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    database=os.getenv("DB_NAME")
-)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# Leer el archivo CSV
-csv_file = "crimes_2020.csv"
-data = pd.read_csv(csv_file, delimiter=";")  # Cambia el delimitador si es necesario
 
-# Detectar dinámicamente las columnas del archivo CSV
-columns = data.columns.tolist()
-print(f"Columnas detectadas en el archivo CSV: {columns}")
+jobs:
+  load-csv:
+    name: 'Cargar datos CSV'
+    runs-on: ubuntu-latest
 
-# Generar la consulta SQL dinámicamente
-table_name = "crimes"  # Cambia esto al nombre de tu tabla
-placeholders = ", ".join(["%s"] * len(columns))
-columns_sql = ", ".join(columns)
-query = f"INSERT INTO {table_name} ({columns_sql}) VALUES ({placeholders})"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
 
-# Insertar los datos en la tabla
-cursor = connection.cursor()
-for _, row in data.iterrows():
-    values = tuple(row[col] for col in columns)
-    cursor.execute(query, values)
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-connection.commit()
-cursor.close()
-connection.close()
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install mysql-connector-python pandas
 
-print("Datos cargados exitosamente.")
+    - name: Cargar datos a MySQL
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        python scripts/load_csv_to_mysql.py
