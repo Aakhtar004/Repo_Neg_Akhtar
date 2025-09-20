@@ -11,9 +11,15 @@ on:
 
 on:
   push:
+    branches:
+        - main
     paths:
-      - 'terraform/**'
-  workflow_dispatch: # Permite ejecutar manualmente el workflow
+    - 'terraform/**'
+    
+  pull_request:
+    branches:
+        - main
+
 
 jobs:
   generate-diagram:

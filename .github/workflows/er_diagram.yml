@@ -9,8 +9,6 @@ on:
       - main
 
 
-on:
-  workflow_dispatch: # Permite ejecutar manualmente el workflow
 
 jobs:
   generate-er-diagram:
