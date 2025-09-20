@@ -1,0 +1,35 @@
+name: 'Generar Diagrama de Infraestructura'
+
+on:
+  push:
+    paths:
+      - 'terraform/**'
+  workflow_dispatch: # Permite ejecutar manualmente el workflow
+
+jobs:
+  generate-diagram:
+    name: 'Generar Diagrama'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Instalar Graphviz
+      run: sudo apt-get install -y graphviz
+
+    - name: Generar Diagrama
+      run: |
+        terraform graph | dot -Tpng > docs/infra_diagram.png
+
+    - name: Actualizar README.md
+      run: |
+        sed -i 's|!\[Infra Diagram\](docs/infra_diagram.png)|![Infra Diagram](docs/infra_diagram.png)|g' README.md
+
+    - name: Commit y Push
+      run: |
+        git config --local user.name "github-actions"
+        git config --local user.email "actions@github.com"
+        git add docs/infra_diagram.png README.md
+        git commit -m "Actualizar diagrama de infraestructura"
+        git push
